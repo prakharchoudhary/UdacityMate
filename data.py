@@ -47,6 +47,9 @@ import requests
 import pprint
 from bs4 import BeautifulSoup
 
+def init():
+	requests.get("")
+
 def get_data(link):
 	html = requests.get(link)
 	html = html.text
@@ -89,7 +92,6 @@ def get_data(link):
 					 "instructors": teachers,
 					 "lessons": lesson_list,
 					 "req": req}
-		# print(link_data)
 		return(link_data)
 	
 	except Exception as e:
@@ -99,6 +101,7 @@ def get_data(link):
 def print_info(links):
 
 	for link in links:
+		print("+++++++++" + link + "++++++++++")
 		data = get_data(link)
 		print("Title:\t\t{}\n".format(data['title'].upper()))
 		print("Type:\t\t{}\n".format(data['type']))
@@ -125,10 +128,12 @@ def print_info(links):
 		print("\n############################################################################################################################\n")
 if __name__=="__main__":
 
-	file = open("./js_courses.txt", "r+")
-	links = file.read()
-	links = links.split(',')
-	print_info(links)
+	# file = open("./js_courses.txt", "r+")
+	# links = file.read()
+	# links = links.split(',')
+	with open("./js_courses.txt", "r") as file:
+		links = file.read().split(',')
+		print_info(links)
 
 
 

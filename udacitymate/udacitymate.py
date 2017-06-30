@@ -1,11 +1,8 @@
 #!/usr/bin/python
 
 """
-This script is written to scrape all the data from udacity's website about
-the selected few courses whose links I have stored in a 'txt' file.
-
-Later the script must be developed into a full scale CLI project with multiple check features and checks
-to find all the 'free courses' for given categories from Udacity's catalog'.
+This script is developed as a full scale CLI project with multiple check features
+to find all the 'free courses' for given categories from Udacity's catalog.
 """
 
 

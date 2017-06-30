@@ -101,4 +101,4 @@ ENV/
 .mypy_cache/
 
 # text_files
-*.txt
+dev_dir.txt

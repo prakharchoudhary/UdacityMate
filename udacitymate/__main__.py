@@ -1,0 +1,3 @@
+import udacitymate
+
+udacitymate.main()

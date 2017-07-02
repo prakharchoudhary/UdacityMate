@@ -5,7 +5,7 @@ This script is developed as a full scale CLI project with multiple check feature
 to find all the 'free courses' for given categories from Udacity's catalog.
 """
 
-
+import sys
 import pprint
 from tabulate import tabulate
 import requests
@@ -194,6 +194,16 @@ def get_data(link):
 		print("{}: Oops! Something went wrong....".format(e))
 
 
+def whatisthis(s):
+    """
+    For python2.x:
+    	Finds if something is unicode or not.
+    """
+    if isinstance(s, str):
+        return False
+    elif isinstance(s, unicode):
+        return True
+
 def print_info(links):
 	"""
 	Prints the course details on the terminal.
@@ -220,7 +230,7 @@ def print_info(links):
 		for lesson in data['lessons']:
 			print("{}: {}\n".format(lesson['lesson_number'], lesson['lesson_title']))
 			count = 1
-			for l in lesson['ldetails']:
+			for l in lesson['ldetails']:				
 				print("{}. {}".format(count, l))
 				count += 1
 			print("\n")
@@ -255,19 +265,28 @@ def filter_dict(course_level, built_by, technology):
 
 	return d
 
-#########################################################################################################
-
-
-if __name__ =="__main__":
+def main():
 
 	list_filters()
 	print("Enter your filters:")
 	
-	built_by = input("Search by affiliated to(seperate using commas): ")
+	version = sys.version_info
 
-	course_level = input("Search by course level(seperate using commas): ")
+	if version.major==3 and version.minor>=4:
 
-	technology = input("Search by technologies(seperate using commas): ")
+		built_by = input("Search by affiliated to(seperate using commas): ")
+
+		course_level = input("Search by course level(seperate using commas): ")
+
+		technology = input("Search by technologies(seperate using commas): ")
+
+	elif version.major==2 and version.minor>=6:
+
+		built_by = raw_input("Search by affiliated to(seperate using commas): ")
+
+		course_level = raw_input("Search by course level(seperate using commas): ")
+
+		technology = raw_input("Search by technologies(seperate using commas): ")
 
 	filters = filter_dict(course_level, built_by, technology)
 
@@ -275,5 +294,12 @@ if __name__ =="__main__":
 	matches = match_class.binder(filters)
 
 	print_info(matches)
+
+#########################################################################################################
+
+
+if __name__ =="__main__":
+
+	main()
 
 

@@ -140,14 +140,16 @@ def get_data(link):
 
 	html = requests.get(link)
 	html = html.text
+	# print(html)
 	obj = BeautifulSoup(html, 'html.parser')
 	try:
-		title = obj.find("h1", class_="hero__course--title").string
-		Type = obj.find("h6", class_="hero__course--type").string
-		info = obj.find("div", class_="information__summary").find("p").string
-		skill_level = obj.find("div", class_="information__details").find("div", class_="icon-middle")['class'][1]
+		title = obj.find("h1", class_="course-title").string
+		Type = obj.find("h6", class_="course-type").string
+		desc = obj.find("div", class_="info-summary").find("p").strings
+		info = ''.join(i for i in desc)
+		skill_level = obj.find("div", class_="info-detail").find("div", class_="icon-middle")['class'][1]
 		try:
-			time = obj.find("div", class_="information__details").find_all("div", class_="section--top")[0]
+			time = obj.find("div", class_="info-detail").find_all("div", class_="section-desc")[0]
 			timeline = time.find_all("h5")[1].string
 
 		except Exception as e:
@@ -155,9 +157,9 @@ def get_data(link):
 
 		try:
 			teachers = []
-			instructors = obj.findAll("h5", class_="instructor--name")
+			instructors = obj.findAll("li", class_="instructor")
 			for i in instructors:
-				teachers.append(i.string)
+				teachers.append(i.find("h5", class_="instructor-name").string)
 
 		except Exception as e:
 			print("{}: Looks like there are no instructors.".format(e))

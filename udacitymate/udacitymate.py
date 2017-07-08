@@ -5,7 +5,7 @@ This script is developed as a full scale CLI project with multiple check feature
 to find all the 'free courses' for given categories from Udacity's catalog.
 """
 
-import sys
+import sys, re
 import pprint
 from tabulate import tabulate
 import requests
@@ -140,14 +140,20 @@ def get_data(link):
 
 	html = requests.get(link)
 	html = html.text
-	# print(html)
 	obj = BeautifulSoup(html, 'html.parser')
 	try:
 		title = obj.find("h1", class_="course-title").string
 		Type = obj.find("h6", class_="course-type").string
-		desc = obj.find("div", class_="info-summary").find("p").strings
-		info = ''.join(i for i in desc)
-		skill_level = obj.find("div", class_="info-detail").find("div", class_="icon-middle")['class'][1]
+		try:
+			desc = obj.find("div", class_="info-summary").find("p").strings
+			info = ''.join(i for i in desc)
+		except:
+			info = "No description"
+		try:
+			skill_level = obj.find("div", class_="info-detail").find("div", class_="icon-middle")['class'][1]
+		except:
+			skill_level = "Don't worry you can do it..."
+
 		try:
 			time = obj.find("div", class_="info-detail").find_all("div", class_="section-desc")[0]
 			timeline = time.find_all("h5")[1].string
@@ -167,29 +173,47 @@ def get_data(link):
 			pass
 
 		lesson_list = []
-		lessons = obj.findAll("a", class_="card--lesson")
+		lessons = obj.find("div", class_="syllabus-contain")
 		try:
-			for lesson in lessons:
-				lnum = lesson.find("h6", class_="mb-half").string
-				ltitle = lesson.find("h4", class_="mb-0").string
-				l_details = lesson.findAll("li")
-				ldetails = []
-				for i in l_details:
-					ldetails.append(i.string)
-				less_dict = {"lesson_number":lnum, "lesson_title": ltitle, "ldetails": ldetails}
-				lesson_list.append(less_dict)
-		except TypeError as e:
-			print("{}: Go check the DOM again, and test in shell too.".format(e))
-		req = obj.findAll("div", class_="course-reqs--summary")
+			header = re.compile(r'^h.+')
+			elements = lessons.find_all()
+			lnums = []
+			for l in elements:
+				if header.match(l.name):
+					lnums.append(l)
 
-		link_data = {"title": title,
-					 "type": Type,
-					 "course_desc": info,
-					 "skill": skill_level,
-					 "timeline": timeline,
-					 "instructors": teachers,
-					 "lessons": lesson_list,
-					 "req": req}
+			ldetails = lessons.find_all("ul")
+			all_details = []
+
+			if len(ldetails) == 0:
+				all_details = lessons.find_all("p")
+			
+			else:
+				for entity in ldetails:
+					items = entity.find_all("li")
+					item_in_one = []
+					for i in items:
+						item_in_one.append(i.string)
+					all_details.append(items)
+			
+			for i in range(len(lnums)):
+				less_dict = {"lesson_title": lnums[i].string, "ldetails": all_details[i]}
+				lesson_list.append(less_dict)
+
+		except TypeError as e:
+			return("{}: Go check the DOM again, and test in shell too.".format(e))
+		# req = obj.findAll("div", class_="course-reqs--summary")
+
+		link_data = {
+					"title": title,
+					"type": Type,
+					"course_desc": info,
+					"skill": skill_level,
+					"timeline": timeline,
+					"instructors": teachers,
+					"lessons": lesson_list,
+					# "req": req
+					}
 		return(link_data)
 	
 	except Exception as e:
@@ -212,7 +236,7 @@ def print_info(links):
 	"""
 
 	for link in links:
-		print("\n+++++++++" + link + "++++++++++\n")
+		print("\n+++++++++ " + link + " ++++++++++\n")
 		data = get_data(link)
 		print("Title:\t\t{}\n".format(data['title'].upper()))
 		print("Type:\t\t{}\n".format(data['type']))
@@ -229,13 +253,16 @@ def print_info(links):
 			print("\t--> No instructors")
 		print("\n")
 		print("### DETAILS: ###")
-		for lesson in data['lessons']:
-			print("{}: {}\n".format(lesson['lesson_number'], lesson['lesson_title']))
-			count = 1
-			for l in lesson['ldetails']:				
-				print("{}. {}".format(count, l))
-				count += 1
-			print("\n")
+		if len(data['lessons']) != 0:
+			for lesson in data['lessons']:
+				print("==> {}\n".format(lesson['lesson_title']))
+				count = 1
+				for l in lesson['ldetails']:				
+					print("{}. {}".format(count, l.string))
+					count += 1
+				print("\n")
+		else:
+			print("No data on lessons!\n")
 		# For requirements: Find a way to scrape out only technology names and any links corressponding to them.
 		print("\n############################################################################################################################\n")
 
